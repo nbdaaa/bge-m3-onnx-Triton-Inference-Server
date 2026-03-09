@@ -43,11 +43,11 @@ ensemble_scheduling {
         value: "attention_mask"
       }
       output_map {
-        key: "output_0"         # dense (B, 1024)
+        key: "dense_vecs"
         value: "_dense_raw"
       }
       output_map {
-        key: "output_1"         # sparse token weights (B, T, 1)
+        key: "sparse_vecs"
         value: "_sparse_raw"
       }
     },

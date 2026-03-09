@@ -23,17 +23,15 @@ input [
 
 output [
   {
-    name: "output_0"          # dense embeddings — shape (B, 1024), đã L2-normalize
+    name: "dense_vecs"
     data_type: TYPE_FP32
     dims: [1024]
   },
   {
-    name: "output_1"          # sparse token weights — shape (B, T, 1)
+    name: "sparse_vecs"
     data_type: TYPE_FP32
     dims: [-1, 1]
   }
-  # output_2 là ColBERT (B, T, 1024) — không khai báo vì không dùng,
-  # Triton sẽ tự bỏ qua output không được request
 ]
 
 instance_group [
