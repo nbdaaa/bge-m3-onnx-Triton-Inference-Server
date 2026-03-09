@@ -32,11 +32,33 @@ docker run --gpus all --rm \
   -v $(pwd)/model_repository:/models \
   nvcr.io/nvidia/tritonserver:24.12-py3 \
   tritonserver --model-repository=/models
+
+# 4. Chạy FastAPI server
+uvicorn server:app --host 0.0.0.0 --port 8080
 ```
 
-Kiểm tra:
+Kiểm tra Triton ready:
 ```bash
 curl localhost:8000/v2/models/bge_m3_ensemble/ready
+```
+
+## Test server
+
+```bash
+# Health check
+curl -s localhost:8080/health
+
+# POST /encode
+curl -s -X POST localhost:8080/encode \
+  -H "Content-Type: application/json" \
+  -d '{"input": "Xin chào, đây là câu test tiếng Việt."}' \
+  | python3 -m json.tool
+
+# POST /encode_batch
+curl -s -X POST localhost:8080/encode_batch \
+  -H "Content-Type: application/json" \
+  -d '{"input": ["What is BGE M3?", "Xin chào Việt Nam"], "batch_size": 16}' \
+  | python3 -m json.tool
 ```
 
 ## Tuning
