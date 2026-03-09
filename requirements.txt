@@ -4,3 +4,4 @@ tritonclient[http]
 transformers
 fastapi
 dotenv
+uvicorn
