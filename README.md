@@ -19,10 +19,13 @@ model_repository/
 ## Setup
 
 ```bash
-# 1. Tải model
+# 1. Cài dependencies
+pip install -r requirements.txt
+
+# 2. Tải model
 python download.py
 
-# 2. Chạy Triton
+# 3. Chạy Triton
 docker run --gpus all --rm \
   -p 8000:8000 -p 8001:8001 -p 8002:8002 \
   --shm-size=2g \
@@ -57,12 +60,3 @@ instance_group [
   { kind: KIND_GPU, count: 1, gpus: [1] }
 ]
 ```
-
-## Lưu ý
-
-| | |
-|---|---|
-| Output names | `aapot/bge-m3-onnx` dùng `output_0/1/2` — config đã map sẵn |
-| `token_type_ids` | Bắt buộc pass vào dù XLM-RoBERTa không dùng — client tự tạo all-zeros |
-| ColBERT (`output_2`) | Không khai báo trong config → Triton bỏ qua |
-| Sparse là `dict` | Serialize JSON vì ~250k vocab không thể trả về dạng dense vector |

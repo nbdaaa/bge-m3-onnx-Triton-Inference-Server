@@ -1,0 +1,4 @@
+huggingface_hub
+onnxruntime-gpu
+tritonclient[http]
+transformers
