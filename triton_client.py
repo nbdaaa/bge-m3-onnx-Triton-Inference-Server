@@ -39,24 +39,15 @@ class TritonBGEM3Client:
             max_length=self.max_length,
             return_tensors="np",
         )
-        result = {k: v.astype(np.int64) for k, v in enc.items()
-                  if k in ("input_ids", "attention_mask")}
-
-        # aapot/bge-m3-onnx export với token_type_ids — phải pass vào dù
-        # XLM-RoBERTa không dùng thực sự (all zeros).
-        if "token_type_ids" in enc:
-            result["token_type_ids"] = enc["token_type_ids"].astype(np.int64)
-        else:
-            result["token_type_ids"] = np.zeros_like(result["input_ids"])
-
-        return result
+        return {k: v.astype(np.int64) for k, v in enc.items()
+                if k in ("input_ids", "attention_mask")}
 
     def _infer_chunk(self, texts: List[str]) -> List[Dict[str, Any]]:
         """Gửi một chunk (≤ max_batch_size) sang Triton, trả về list kết quả."""
         enc = self._tokenize(texts)
 
         triton_inputs = []
-        for name in ("input_ids", "attention_mask", "token_type_ids"):
+        for name in ("input_ids", "attention_mask"):
             arr = enc[name]
             t = httpclient.InferInput(name, arr.shape, "INT64")
             t.set_data_from_numpy(arr)

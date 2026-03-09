@@ -12,11 +12,6 @@ input [
     name: "attention_mask"
     data_type: TYPE_INT64
     dims: [-1]
-  },
-  {
-    name: "token_type_ids"
-    data_type: TYPE_INT64
-    dims: [-1]
   }
 ]
 
@@ -46,10 +41,6 @@ ensemble_scheduling {
       input_map {
         key: "attention_mask"
         value: "attention_mask"
-      }
-      input_map {
-        key: "token_type_ids"
-        value: "token_type_ids"
       }
       output_map {
         key: "output_0"         # dense (B, 1024)
