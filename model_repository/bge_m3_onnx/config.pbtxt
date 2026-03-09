@@ -1,0 +1,62 @@
+name: "bge_m3_onnx"
+backend: "onnxruntime"
+max_batch_size: 64
+
+# Dynamic batching: tự động group requests lại để tăng throughput
+dynamic_batching {
+  preferred_batch_size: [8, 16, 32]
+  max_queue_delay_microseconds: 5000
+}
+
+# Tên input/output lấy từ aapot/bge-m3-onnx — verify bằng:
+#   python -c "
+#   import onnxruntime as ort
+#   s = ort.InferenceSession('model_repository/bge_m3_onnx/1/model.onnx')
+#   print('IN: ', [(i.name, i.shape) for i in s.get_inputs()])
+#   print('OUT:', [(o.name, o.shape) for o in s.get_outputs()])
+#   "
+# Expected:
+#   IN:  [('input_ids', ...), ('attention_mask', ...), ('token_type_ids', ...)]
+#   OUT: [('output_0', [B,1024]), ('output_1', [B,T,1]), ('output_2', [B,T,1024])]
+
+input [
+  {
+    name: "input_ids"
+    data_type: TYPE_INT64
+    dims: [-1]
+  },
+  {
+    name: "attention_mask"
+    data_type: TYPE_INT64
+    dims: [-1]
+  },
+  {
+    # XLM-RoBERTa không dùng token_type_ids thực sự nhưng aapot/bge-m3-onnx
+    # export với input này — phải pass vào hoặc Triton sẽ báo lỗi missing input
+    name: "token_type_ids"
+    data_type: TYPE_INT64
+    dims: [-1]
+  }
+]
+
+output [
+  {
+    name: "output_0"          # dense embeddings — shape (B, 1024), đã L2-normalize
+    data_type: TYPE_FP32
+    dims: [1024]
+  },
+  {
+    name: "output_1"          # sparse token weights — shape (B, T, 1)
+    data_type: TYPE_FP32
+    dims: [-1, 1]
+  }
+  # output_2 là ColBERT (B, T, 1024) — không khai báo vì không dùng,
+  # Triton sẽ tự bỏ qua output không được request
+]
+
+instance_group [
+  {
+    kind: KIND_GPU
+    count: 1
+  }
+]

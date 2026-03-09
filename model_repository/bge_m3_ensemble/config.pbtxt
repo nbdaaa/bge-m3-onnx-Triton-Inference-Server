@@ -1,0 +1,90 @@
+name: "bge_m3_ensemble"
+platform: "ensemble"
+max_batch_size: 64
+
+input [
+  {
+    name: "input_ids"
+    data_type: TYPE_INT64
+    dims: [-1]
+  },
+  {
+    name: "attention_mask"
+    data_type: TYPE_INT64
+    dims: [-1]
+  },
+  {
+    name: "token_type_ids"
+    data_type: TYPE_INT64
+    dims: [-1]
+  }
+]
+
+output [
+  {
+    name: "dense_vecs"
+    data_type: TYPE_FP32
+    dims: [1024]
+  },
+  {
+    name: "sparse_vecs_json"
+    data_type: TYPE_STRING
+    dims: [1]
+  }
+]
+
+ensemble_scheduling {
+  step [
+    # Step 1: ONNX backbone (aapot/bge-m3-onnx)
+    {
+      model_name: "bge_m3_onnx"
+      model_version: 1
+      input_map {
+        key: "input_ids"
+        value: "input_ids"
+      }
+      input_map {
+        key: "attention_mask"
+        value: "attention_mask"
+      }
+      input_map {
+        key: "token_type_ids"
+        value: "token_type_ids"
+      }
+      output_map {
+        key: "output_0"         # dense (B, 1024)
+        value: "_dense_raw"
+      }
+      output_map {
+        key: "output_1"         # sparse token weights (B, T, 1)
+        value: "_sparse_raw"
+      }
+    },
+
+    # Step 2: Sparse postprocess
+    {
+      model_name: "bge_m3_postprocess"
+      model_version: 1
+      input_map {
+        key: "input_ids"
+        value: "input_ids"      # pass-through từ ensemble input để lọc special tokens
+      }
+      input_map {
+        key: "dense_vecs"
+        value: "_dense_raw"
+      }
+      input_map {
+        key: "sparse_vecs"
+        value: "_sparse_raw"
+      }
+      output_map {
+        key: "dense_vecs"
+        value: "dense_vecs"
+      }
+      output_map {
+        key: "sparse_vecs_json"
+        value: "sparse_vecs_json"
+      }
+    }
+  ]
+}
