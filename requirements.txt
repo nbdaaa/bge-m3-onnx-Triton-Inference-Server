@@ -3,3 +3,4 @@ onnxruntime-gpu
 tritonclient[http]
 transformers
 fastapi
+dotenv
