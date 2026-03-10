@@ -34,7 +34,7 @@ docker run --gpus all --rm \
   tritonserver --model-repository=/models
 
 # 4. Chạy FastAPI server
-uvicorn server:app --host 0.0.0.0 --port 8080
+uvicorn server:app --host 0.0.0.0 --port 12345
 ```
 
 Kiểm tra Triton ready:
