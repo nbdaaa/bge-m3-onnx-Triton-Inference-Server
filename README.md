@@ -21,7 +21,7 @@ model_repository/
 ### Docker Compose (recommended)
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 This will:
@@ -48,7 +48,7 @@ docker run --gpus all -d --rm \
   tritonserver --model-repository=/models
 
 # 4. Chạy FastAPI server
-uvicorn server:app --host 0.0.0.0 --port 12345
+uvicorn server:app --host 0.0.0.0 --port 12345 &
 ```
 
 Kiểm tra Triton ready:
@@ -87,12 +87,4 @@ dynamic_batching {
     timeout_action: REJECT
   }
 }
-```
-
-**Multi-GPU:**
-```protobuf
-instance_group [
-  { kind: KIND_GPU, count: 1, gpus: [0] },
-  { kind: KIND_GPU, count: 1, gpus: [1] }
-]
 ```
