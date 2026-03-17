@@ -21,7 +21,7 @@ gpu_indices_str = sys.argv[2]
 if gpu_indices_str:
     indices = [int(x) for x in gpu_indices_str.split(",") if x]
     entries = [
-        f"  {{\n    kind: KIND_GPU\n    count: 1\n    gpus: [{i}]\n  }}"
+        f"  {{\n    kind: KIND_GPU\n    count: 1\n    gpus: {i}\n  }}"
         for i in indices
     ]
     instance_group = "instance_group [\n" + ",\n".join(entries) + "\n]"
