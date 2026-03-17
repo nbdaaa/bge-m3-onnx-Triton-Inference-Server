@@ -1,0 +1,51 @@
+services:
+  model-downloader:
+    build: .
+    volumes:
+      - ./model_repository:/app/model_repository
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: python download.py
+
+  triton:
+    image: nvcr.io/nvidia/tritonserver:25.02-py3
+    depends_on:
+      model-downloader:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+    shm_size: 2g
+    volumes:
+      - ./model_repository:/models
+    command: tritonserver --model-repository=/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  fastapi:
+    build: .
+    depends_on:
+      triton:
+        condition: service_healthy
+    ports:
+      - "12345:12345"
+    environment:
+      - TRITON_URL=triton:8000
+    command: uvicorn server:app --host 0.0.0.0 --port 12345
