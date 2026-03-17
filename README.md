@@ -26,7 +26,7 @@ pip install -r requirements.txt
 python download.py
 
 # 3. Chạy Triton
-docker run --gpus all --rm \
+docker run --gpus all -d --rm \
   -p 8000:8000 -p 8001:8001 -p 8002:8002 \
   --shm-size=2g \
   -v $(pwd)/model_repository:/models \
@@ -34,7 +34,7 @@ docker run --gpus all --rm \
   tritonserver --model-repository=/models
 
 # 4. Chạy FastAPI server
-uvicorn server:app --host 0.0.0.0 --port 12345
+uvicorn server:app --host 0.0.0.0 --port 12345 &
 ```
 
 Kiểm tra Triton ready:
